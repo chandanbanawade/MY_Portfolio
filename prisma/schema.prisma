@@ -1,0 +1,263 @@
+// ---------------------------------------------------------------------------
+// Database schema — Chandan Banawade mentorship platform
+//
+// PROVIDER SWITCHING
+//   Local development runs on SQLite so the site boots with zero setup.
+//   For production, switch to PostgreSQL with:  npm run use:postgres
+//   (that script rewrites the `provider` line below and updates .env guidance)
+//
+//   Every model here is intentionally portable between SQLite and PostgreSQL:
+//   no native enums, no scalar arrays. Status fields are plain strings that are
+//   narrowed to union types in TypeScript (see src/lib/types.ts).
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --- Admin -----------------------------------------------------------------
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+// --- Catalogue -------------------------------------------------------------
+
+/// A bookable session type (15 / 30 / 60 / 90 min ...).
+/// Prices live here so they can be edited from the admin dashboard without a
+/// deploy. src/config/sessions.ts holds the seed defaults.
+model SessionType {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  tagline         String
+  durationMin     Int
+  priceInr        Int
+  description     String
+  /// JSON-encoded string[] — what this session covers
+  bullets         String    @default("[]")
+  /// JSON-encoded string[] of meeting providers the visitor may choose from.
+  allowedProviders String   @default("[\"google_meet\"]")
+  /// Free sessions skip payment and are limited to one per email address.
+  isFree          Boolean   @default(false)
+  popular         Boolean   @default(false)
+  active          Boolean   @default(true)
+  sortOrder       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  bookings        Booking[]
+}
+
+/// A mentorship area the PLATFORM offers. Not a claim about employment history —
+/// see the note at the top of src/config/categories.ts.
+model MentorshipCategory {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  description String
+  /// lucide-react icon name, resolved in src/components/ui/icon.tsx
+  icon        String    @default("Sparkles")
+  /// cybersecurity | ai_ml | data_science | programming | career | interview | projects
+  group       String    @default("cybersecurity")
+  /// professional = evidenced by the CV · guidance = mentorship area only
+  backing     String    @default("guidance")
+  /// JSON-encoded string[] of sub-topics
+  topics      String    @default("[]")
+  active      Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  bookings    Booking[]
+}
+
+/// Key/value application settings editable from the admin dashboard.
+/// Used for the free-consultation policy so it can be changed without a deploy.
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// Multi-session bundles.
+model MentorshipPackage {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  title       String
+  description String
+  sessionCount Int
+  durationMin Int
+  priceInr    Int
+  /// e.g. "Save ₹297" — optional marketing note
+  savingsNote String?
+  popular     Boolean @default(false)
+  active      Boolean @default(true)
+  sortOrder   Int     @default(0)
+}
+
+// --- Availability ----------------------------------------------------------
+
+/// Recurring weekly availability window, expressed in minutes from midnight IST.
+/// e.g. Monday 10:00–13:00  ->  dayOfWeek 1, startMinutes 600, endMinutes 780
+model AvailabilityRule {
+  id           String  @id @default(cuid())
+  dayOfWeek    Int // 0 = Sunday ... 6 = Saturday
+  startMinutes Int
+  endMinutes   Int
+  active       Boolean @default(true)
+
+  @@index([dayOfWeek])
+}
+
+/// A full day (or part of a day) the mentor is unavailable.
+/// `date` is a plain YYYY-MM-DD string to keep slot maths timezone-safe.
+model BlockedDate {
+  id     String  @id @default(cuid())
+  date   String  @unique
+  reason String?
+}
+
+// --- People ----------------------------------------------------------------
+
+model Customer {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String
+  phone     String?
+  linkedin  String?
+  github    String?
+  /// Set the moment a free consultation is booked. Its presence is what blocks
+  /// a second free claim — see assertFreeConsultationAvailable() in bookings.ts.
+  freeConsultationUsedAt DateTime?
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+}
+
+// --- Bookings --------------------------------------------------------------
+
+model Booking {
+  id          String  @id @default(cuid())
+  /// Human-friendly reference shown to the customer, e.g. CB-7QK4M2
+  reference   String  @unique
+  /// YYYY-MM-DD in Asia/Kolkata
+  date        String
+  /// Minutes from midnight IST
+  startMinutes Int
+  endMinutes   Int
+  durationMin  Int
+  priceInr     Int
+
+  /// DOUBLE-BOOKING GUARD.
+  /// Set to "<date>#<startMinutes>" while the booking holds the slot, and set
+  /// back to NULL when cancelled. Both SQLite and PostgreSQL allow many NULLs
+  /// in a unique column, so cancelling frees the slot for rebooking while an
+  /// active booking can never be duplicated — even under a race.
+  slotKey     String? @unique
+
+  /// pending | confirmed | completed | cancelled
+  /// Free consultations are created directly as "confirmed" — there is no payment step.
+  status      String  @default("pending")
+
+  /// True when this booking consumed the customer's one free consultation.
+  isFree      Boolean @default(false)
+
+  /// Meeting provider chosen by the visitor during booking.
+  meetingProvider String @default("google_meet")
+
+  /// Free-text mentorship topic the visitor entered.
+  topic       String?
+  helpWith    String?
+  message     String?
+  timezone    String  @default("Asia/Kolkata")
+
+  sessionTypeId String
+  sessionType   SessionType @relation(fields: [sessionTypeId], references: [id])
+
+  categoryId String?
+  category   MentorshipCategory? @relation(fields: [categoryId], references: [id])
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  payment Payment?
+  meeting Meeting?
+  review  Review?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@index([status])
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  bookingId     String    @unique
+  booking       Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  /// razorpay | mock
+  provider      String    @default("mock")
+  amountInr     Int
+  currency      String    @default("INR")
+  /// created | paid | failed | refunded
+  status        String    @default("created")
+  orderId       String?
+  transactionId String?
+  createdAt     DateTime  @default(now())
+  paidAt        DateTime?
+}
+
+model Meeting {
+  id        String  @id @default(cuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  /// google_meet | zoom | phone | whatsapp
+  provider  String  @default("google_meet")
+  joinUrl   String?
+  /// scheduled | completed | cancelled
+  status    String  @default("scheduled")
+  notes     String?
+}
+
+/// A genuine rating submitted by someone who attended a session.
+/// There are NO sample or placeholder rows — the seed never creates any.
+/// Submissions arrive unpublished and appear publicly only once approved
+/// in /admin/reviews.
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  role      String   @default("")
+  email     String?
+  rating    Int      @default(5)
+  /// The optional written comment. Empty string = rating only.
+  quote     String   @default("")
+  /// Booking reference the rater supplied, if any. Used to verify authenticity.
+  reference String?
+  published Boolean  @default(false)
+  sortOrder Int      @default(0)
+  bookingId String?  @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([published])
+}
+
+/// Outbound notification log (email/WhatsApp). Until a provider is configured
+/// these are written here and echoed to the server console, so the flow is
+/// fully testable without external API keys.
+model NotificationLog {
+  id        String   @id @default(cuid())
+  channel   String // email | whatsapp | console
+  template  String // booking_confirmed | mentor_alert | reminder_24h | ...
+  recipient String
+  subject   String?
+  body      String
+  status    String   @default("logged") // logged | sent | failed
+  bookingId String?
+  createdAt DateTime @default(now())
+}
