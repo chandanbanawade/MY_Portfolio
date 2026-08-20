@@ -5,12 +5,10 @@ import { About } from "@/components/site/about";
 import { Experience } from "@/components/site/experience";
 import { Achievements } from "@/components/site/achievements";
 import { BugBounty } from "@/components/site/bug-bounty";
-import { Expertise } from "@/components/site/expertise";
+import { Findings } from "@/components/site/findings";
 import { FreeConsultation } from "@/components/site/free-consultation";
 import { Mentorship } from "@/components/site/mentorship";
 import { Categories } from "@/components/site/categories";
-import { Packages } from "@/components/site/packages";
-import { Projects } from "@/components/site/projects";
 import { Speaking } from "@/components/site/speaking";
 import { Feedback } from "@/components/site/feedback";
 import { Faq } from "@/components/site/faq";
@@ -22,7 +20,6 @@ import {
   getPaidSessionTypes,
   getFreeConsultation,
   getCategories,
-  getPackages,
   getPublishedReviews,
 } from "@/lib/data";
 import { serviceSchema, faqSchema } from "@/lib/schema";
@@ -31,13 +28,12 @@ import { serviceSchema, faqSchema } from "@/lib/schema";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [allSessions, paidSessions, freeSession, categories, packages, reviews] =
+  const [allSessions, paidSessions, freeSession, categories, reviews] =
     await Promise.all([
       getSessionTypes(),
       getPaidSessionTypes(),
       getFreeConsultation(),
       getCategories(),
-      getPackages(),
       getPublishedReviews(),
     ]);
 
@@ -58,8 +54,11 @@ export default async function HomePage() {
         <About />
         <Experience />
         <Achievements />
+        {/* Teaching credentials sit with the recognition they follow from. */}
+        <Speaking />
         <BugBounty />
-        <Expertise />
+        {/* The detail behind the 500+ counter, straight after the counter. */}
+        <Findings />
 
         {/* Then the offer. */}
         <FreeConsultation session={freeSession} />
@@ -71,10 +70,6 @@ export default async function HomePage() {
           title="Get personalised guidance — start with a free 15-minute call."
           freeAvailable={freeAvailable}
         />
-
-        <Packages packages={packages} />
-        <Projects />
-        <Speaking />
 
         <Feedback reviews={reviews} />
         <Faq />

@@ -1,0 +1,286 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   TOKENS — every colour, size and duration in the build derives from here.
+   Direction A, "Report": warm paper-adjacent dark ground, one signal accent.
+--------------------------------------------------------------------------- */
+@theme {
+  /* Ground → text. Warm neutral ramp, never pure black, never pure white. */
+  --color-ground: #12110f;
+  --color-surface: #191713;
+  --color-surface-2: #211e19;
+  --color-hairline: #2f2b24;
+  --color-hairline-strong: #443e34;
+  --color-text: #efe9df;
+  --color-muted: #9c9285;
+
+  /* The one accent. Critical severity and the primary call to action only. */
+  --color-signal: #ff6b3d;
+  --color-signal-ink: #12110f;
+
+  /* Type roles: display (restraint), body (comfort), mono (evidence). */
+  --font-display: var(--font-newsreader), Iowan Old Style, Georgia, serif;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+
+  /* Modular scale 1.25 from a 16px base. --text-meta is the 14px mobile
+     floor and is deliberately off-scale; nothing renders smaller. */
+  --text-meta: 0.875rem;
+  --text-meta--line-height: 1.45;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.55;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.65;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.5;
+  --text-xl: 1.5625rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 1.9531rem;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 2.4414rem;
+  --text-3xl--line-height: 1.15;
+  --text-4xl: 3.0518rem;
+  --text-4xl--line-height: 1.08;
+  --text-5xl: 3.8147rem;
+  --text-5xl--line-height: 1.02;
+  --text-6xl: 4.7684rem;
+  --text-6xl--line-height: 0.98;
+
+  /* Motion. One easing curve for the whole page. */
+  --ease-report: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --container-report: 78rem;
+}
+
+@theme inline {
+  --color-signal-dim: color-mix(in oklab, var(--color-signal) 45%, var(--color-ground));
+}
+
+/* ---------------------------------------------------------------------------
+   BASE
+--------------------------------------------------------------------------- */
+@layer base {
+  * {
+    min-width: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.65;
+    font-feature-settings: "kern", "liga", "calt";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-signal-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  /* The default ring is removed only where a designed one replaces it. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ground);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-hairline);
+    border: 3px solid var(--color-ground);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-hairline-strong);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   UTILITIES
+--------------------------------------------------------------------------- */
+@utility meta-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+@layer components {
+  /* Underline that draws from whichever edge the cursor entered. */
+  .draw-link {
+    position: relative;
+    --draw-origin: left;
+  }
+
+  .draw-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.15em;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: var(--draw-origin);
+    transition: transform 320ms var(--ease-report);
+  }
+
+  .draw-link:hover::after,
+  .draw-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* Hairline rule that draws left→right when it enters the viewport. */
+  .rule {
+    height: 1px;
+    background: var(--color-hairline);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 700ms var(--ease-report);
+  }
+
+  .rule[data-drawn="true"] {
+    transform: scaleX(1);
+  }
+
+  /* ---- Page-load sequence ----------------------------------------------
+     One orchestrated timeline. Every participant sets --seq-delay from the
+     same base, so the whole first fold lands inside 1200ms. CSS rather than
+     a motion library: this is a staggered fade, and an animation engine costs
+     ~38KB gzipped to do it. It also runs without JavaScript. */
+  .seq {
+    opacity: 0;
+    animation: seq-in 520ms var(--ease-report) both;
+    animation-delay: var(--seq-delay, 0ms);
+  }
+
+  .seq-line {
+    opacity: 0;
+    animation: seq-fade 300ms var(--ease-report) both;
+    animation-delay: var(--seq-delay, 0ms);
+  }
+
+  /* Reveal primitive. Fires once; opacity + a ≤24px translate, nothing else. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 520ms var(--ease-report),
+      transform 520ms var(--ease-report);
+  }
+
+  .reveal[data-shown="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   AMBIENT — one layer. Invisible in a screenshot, felt only in motion.
+--------------------------------------------------------------------------- */
+.scanline {
+  position: fixed;
+  inset: -100% 0 -100% 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.025;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-text) 0 1px,
+    transparent 1px 4px
+  );
+  animation: scan 32s linear infinite;
+  will-change: transform;
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes seq-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes seq-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   REDUCED MOTION — the global gate. Everything collapses to opacity or off.
+   The animation config hook mirrors this for the JS-driven pieces.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    /* Delays have to go too, or the load sequence still holds the first fold
+       blank for a second before snapping in. */
+    animation-delay: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .scanline {
+    display: none;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .rule {
+    transform: scaleX(1);
+  }
+}

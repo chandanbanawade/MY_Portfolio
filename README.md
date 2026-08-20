@@ -63,10 +63,14 @@ Everything you'll want to change lives in `src/config/`. No component edits need
 | `expertise.ts` | Skill groups and badges |
 | `experience.ts` | About text, experience timeline, education, certifications, speaking, mentoring philosophy |
 | `achievements.ts` | Achievements and Hall of Fame recognition |
+| `findings.ts` | **Selected findings** — the detail behind the 500+ counter. Read the rules at the top before adding one: sector not client name, `disclosure: null` unless the URL is real, CVSS vector must match the score |
 | `projects.ts` | Project cards |
 | `faq.ts` | FAQ (also emitted as structured data) |
 | `testimonials.ts` | Copy and rules for the "Rate your session" form |
 | `availability.ts` | Weekly availability windows and blocked dates |
+
+`findings.ts` renders straight from config and is **not** seeded into the database —
+edit the file and the section updates on next request. Everything else below is.
 
 After editing, run `npm run db:seed` to sync into the database. The seed **prunes**
 entries you delete from config — anything still referenced by a booking is
@@ -265,6 +269,42 @@ arrays specifically so the schema is portable between the two.
 
 > On Windows, stop the dev server before `npm run build` — it locks Prisma's
 > query-engine DLL and the build fails with `EPERM`.
+
+---
+
+## Security headers
+
+This site belongs to a security researcher and will be scanned by peers, so the
+headers are treated as a portfolio item rather than an afterthought.
+
+**Enforced** (`next.config.ts`): `X-Frame-Options: DENY`, `X-Content-Type-Options:
+nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`
+(only `payment=(self)` for Razorpay), HSTS with `preload`, `X-DNS-Prefetch-Control:
+off`, plus `noindex` and `no-store` on `/admin/*`.
+
+**Content-Security-Policy — currently Report-Only** (`src/middleware.ts`). A
+per-request nonce is minted there and reaches every script tag: the theme
+anti-flash script, the JSON-LD blocks and all of Next's own bundles. Verified —
+one distinct nonce per response, matching the header.
+
+It is Report-Only for one reason: this app takes payments. Razorpay's checkout is
+injected at runtime and opens its own iframe, so a slightly-wrong enforcing policy
+does not degrade the page, it stops people paying.
+
+**To enforce**, after taking one real test payment with the console open and seeing
+no violations for `checkout.razorpay.com`:
+
+```ts
+// src/middleware.ts
+const HEADER = "Content-Security-Policy";   // was ...-Report-Only
+```
+
+That is the whole change. Note that securityheaders.com grades a Report-Only CSP
+below an enforced one — expect an A until you flip it, and an A+ afterwards.
+
+`/.well-known/security.txt` (RFC 9116) is served with a contact address, an
+expiry and an explicit out-of-scope list. Update the `Expires` date before it
+lapses; a stale security.txt reads worse than none.
 
 ---
 

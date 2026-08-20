@@ -72,7 +72,7 @@ export const faqs: { question: string; answer: string }[] = [
   {
     question: "Can I book multiple sessions?",
     answer:
-      "Yes. If you know you want several, the packages work out cheaper than booking individually — and ongoing mentorship tends to produce far better results than a single call.",
+      "Yes — book them individually, or mention it in your booking notes and we'll plan a sequence. Ongoing mentorship tends to produce far better results than a single call.",
   },
   {
     question: "What timezone are the slots shown in?",

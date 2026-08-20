@@ -1,8 +1,11 @@
+import { ArrowUpRight, Linkedin } from "lucide-react";
 import { Section, SectionHeader, Card, Badge } from "@/components/ui/primitives";
+import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { Icon } from "@/components/ui/icon";
 import { achievements, hallOfFame } from "@/config/achievements";
 import { certifications } from "@/config/experience";
+import { site } from "@/config/site";
 
 export function Achievements() {
   return (
@@ -80,6 +83,44 @@ export function Achievements() {
             </Card>
           ))}
         </div>
+      </Reveal>
+
+      {/* --- Live feed --------------------------------------------------- */}
+      {/* Everything above is fixed for as long as the CV is. The wins, talks
+          and event photos that arrive week to week live on LinkedIn, so this
+          points there rather than going stale in the repo. */}
+      <Reveal>
+        <Card className="mt-6 flex flex-col items-start gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3.5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius)] bg-accent-soft text-accent">
+              <Linkedin className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+            </span>
+            <div>
+              <h3 className="text-sm font-semibold text-fg">
+                Achievements &amp; Moments
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-fg-muted">
+                Talks, new acknowledgements and event photos as they happen —
+                posted on LinkedIn.
+              </p>
+            </div>
+          </div>
+
+          <ButtonLink
+            href={site.socials.linkedinActivity}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="secondary"
+            className="group w-full shrink-0 sm:w-auto"
+          >
+            View on LinkedIn
+            <ArrowUpRight
+              className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              strokeWidth={2}
+            />
+            <span className="sr-only">— opens in a new tab</span>
+          </ButtonLink>
+        </Card>
       </Reveal>
     </Section>
   );

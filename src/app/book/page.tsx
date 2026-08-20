@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Book a Mentorship Session",
   description:
-    "Book a 1-to-1 mentorship session in cybersecurity, AI/ML, data science, programming, projects, interviews or career guidance. Start with a free 15-minute consultation.",
+    "Book a 1-to-1 mentorship session in cybersecurity, AI/ML or data science. Start with a free 15-minute consultation.",
   alternates: { canonical: "/book" },
   openGraph: {
     title: `Book a Mentorship Session · ${site.name}`,

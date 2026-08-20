@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, Gift, MapPin } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Gift, MapPin } from "lucide-react";
 import { site } from "@/config/site";
 import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -115,8 +115,23 @@ export function Hero({
                 >
                   Book a Mentorship Session
                 </ButtonLink>
-                <ButtonLink href="/#expertise" variant="ghost" size="lg">
-                  Explore My Expertise
+                {/* Live feed of talks, wins and event photos — the part of the
+                    record that changes weekly, so it links out rather than
+                    being mirrored here. */}
+                <ButtonLink
+                  href={site.socials.linkedinActivity}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="outline"
+                  size="lg"
+                  className="group"
+                >
+                  Achievements &amp; Moments
+                  <ArrowUpRight
+                    className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    strokeWidth={2}
+                  />
+                  <span className="sr-only">— opens LinkedIn in a new tab</span>
                 </ButtonLink>
               </div>
 

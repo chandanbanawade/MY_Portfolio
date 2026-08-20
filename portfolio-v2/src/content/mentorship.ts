@@ -1,131 +1,91 @@
 /**
- * MENTORSHIP CATEGORIES — what the PLATFORM offers.
- * =============================================================================
- * IMPORTANT DISTINCTION, PLEASE PRESERVE IT:
+ * MENTORSHIP AREAS — what is offered, not a claim about employment history.
  *
- *   This file lists the mentorship areas Chandan offers guidance in.
- *   It is NOT a claim about his professional employment history.
+ * PRESERVE THIS DISTINCTION. `backing` drives an honest label in the UI:
+ *   "professional" → directly evidenced by the CV (the security work)
+ *   "guidance"     → mentorship and career direction in this area, which is
+ *                    not the same as claiming industry employment in it
  *
- *   His verified professional background lives in `experience.ts` and
- *   `expertise.ts`, sourced strictly from his CV.
- *
- *   Categories carry a `backing` field that the UI renders honestly:
- *     "professional" → directly evidenced by his CV (security work)
- *     "guidance"     → he mentors in this area; it is not claimed as
- *                      professional employment experience
- *
- * Add a new category by appending to the list and re-running `npm run db:seed`.
- * Everything downstream — homepage grid, booking wizard, admin — reads this.
+ * Ported from the booking platform's src/config/categories.ts, trimmed to the
+ * two pillars this site offers: security, and data science / AI-ML.
  */
 
-export type CategoryGroupKey =
-  | "ai_ml"
-  | "data_science"
-  | "cybersecurity"
-  | "programming"
-  | "career"
-  | "interview"
-  | "projects";
+export type PillarKey = "cybersecurity" | "ai_ml" | "data_science";
 
-/** How strongly the CV backs this area. Drives the honesty label in the UI. */
 export type Backing = "professional" | "guidance";
 
-export type CategoryConfig = {
+export type Pillar = {
+  key: PillarKey;
+  label: string;
+  blurb: string;
+};
+
+export type MentorshipArea = {
   slug: string;
   title: string;
   description: string;
-  icon: string;
-  group: CategoryGroupKey;
+  pillar: PillarKey;
   backing: Backing;
-  /** Bullet topics shown on the category card. */
   topics: string[];
-  active?: boolean;
 };
 
-export const categoryGroups: Record<
-  CategoryGroupKey,
-  { label: string; blurb: string; icon: string }
-> = {
-  cybersecurity: {
+export const pillars: Pillar[] = [
+  {
+    key: "cybersecurity",
     label: "Cybersecurity",
-    blurb:
-      "Chandan's professional field — offensive security, bug bounty and VAPT.",
-    icon: "ShieldCheck",
+    blurb: "The professional field — offensive security, bug bounty and VAPT.",
   },
-  ai_ml: {
+  {
+    key: "ai_ml",
     label: "AI / Machine Learning",
     blurb: "Roadmaps, project direction and interview preparation for AI roles.",
-    icon: "BrainCircuit",
   },
-  data_science: {
+  {
+    key: "data_science",
     label: "Data Science",
     blurb: "Python, SQL, analytics and the path from beginner to job-ready.",
-    icon: "ChartLine",
   },
-  programming: {
-    label: "Programming & Development",
-    blurb: "Fundamentals, backend, APIs and writing code you can maintain.",
-    icon: "Code2",
-  },
-  career: {
-    label: "Career Mentorship",
-    blurb: "Roadmaps, resumes, portfolios and deciding what to learn next.",
-    icon: "Route",
-  },
-  interview: {
-    label: "Interview Preparation",
-    blurb: "Mock rounds and how to talk about your work so it lands.",
-    icon: "MessagesSquare",
-  },
-  projects: {
-    label: "Project Mentorship",
-    blurb: "From idea to deployed, with someone reviewing as you go.",
-    icon: "Boxes",
-  },
-};
+];
 
-export const categories: CategoryConfig[] = [
-  /* --- Cybersecurity — Chandan's professional field ----------------------- */
+export const mentorshipAreas: MentorshipArea[] = [
+  /* --- Cybersecurity ------------------------------------------------------ */
   {
     slug: "ethical-hacking-pentesting",
-    title: "Ethical Hacking & Penetration Testing",
+    title: "Ethical hacking & penetration testing",
     description:
       "Methodology from scoping to reporting, drawn from live client engagements across web, mobile, API, network and cloud.",
-    icon: "Crosshair",
-    group: "cybersecurity",
+    pillar: "cybersecurity",
     backing: "professional",
     topics: [
-      "Penetration testing methodology",
+      "Testing methodology",
       "Web & API security",
       "Mobile security",
       "Network & infrastructure",
       "Cloud security",
-      "Reporting & CVSS scoring",
+      "CVSS scoring & reporting",
     ],
   },
   {
     slug: "bug-bounty-vulnerability-research",
-    title: "Bug Bounty & Vulnerability Research",
+    title: "Bug bounty & vulnerability research",
     description:
       "How to actually find bugs: recon workflow, choosing programs, and writing reports that get accepted rather than duplicated.",
-    icon: "Bug",
-    group: "cybersecurity",
+    pillar: "cybersecurity",
     backing: "professional",
     topics: [
       "Recon methodology",
       "Choosing programs",
       "Report writing",
       "Avoiding duplicates",
-      "Vulnerability assessment",
+      "Triage expectations",
     ],
   },
   {
     slug: "application-security",
-    title: "Application Security",
+    title: "Application security",
     description:
       "The vulnerability classes behind real disclosures — how to find them, prove them and fix them.",
-    icon: "Lock",
-    group: "cybersecurity",
+    pillar: "cybersecurity",
     backing: "professional",
     topics: [
       "OWASP Top 10",
@@ -138,11 +98,10 @@ export const categories: CategoryConfig[] = [
   },
   {
     slug: "red-teaming",
-    title: "Red Teaming & Threat Emulation",
+    title: "Red teaming & threat emulation",
     description:
       "Adversary simulation, attack surface management and threat modelling as run on enterprise engagements.",
-    icon: "Swords",
-    group: "cybersecurity",
+    pillar: "cybersecurity",
     backing: "professional",
     topics: [
       "Red team operations",
@@ -154,32 +113,44 @@ export const categories: CategoryConfig[] = [
   },
   {
     slug: "security-career-guidance",
-    title: "Cybersecurity Career Guidance",
+    title: "Cybersecurity career guidance",
     description:
       "A realistic path into security: what to learn, in what order, which labs matter and which certifications are worth the money.",
-    icon: "Map",
-    group: "cybersecurity",
+    pillar: "cybersecurity",
     backing: "professional",
     topics: [
-      "Security career roadmap",
+      "Security roadmap",
       "Certification strategy",
       "Building a lab",
-      "Landing your first role",
+      "Landing the first role",
       "Freelance vs full-time",
     ],
   },
 
   /* --- AI / Machine Learning ---------------------------------------------- */
   {
+    slug: "ai-security-automation",
+    title: "AI for security & automation",
+    description:
+      "Building AI-assisted recon and automation tooling — the area where the security work and AI directly overlap.",
+    pillar: "ai_ml",
+    backing: "professional",
+    topics: [
+      "Automated recon pipelines",
+      "Model-assisted triage",
+      "Security automation",
+      "Tooling with Python",
+    ],
+  },
+  {
     slug: "ai-ml-career-guidance",
-    title: "AI / ML Career Guidance",
+    title: "AI / ML career guidance",
     description:
       "Choosing between AI, ML, data and security tracks, and understanding what these roles actually involve day to day.",
-    icon: "BrainCircuit",
-    group: "ai_ml",
+    pillar: "ai_ml",
     backing: "guidance",
     topics: [
-      "AI/ML career roadmap",
+      "Career roadmap",
       "Choosing a specialisation",
       "Skill prioritisation",
       "Portfolio direction",
@@ -187,11 +158,10 @@ export const categories: CategoryConfig[] = [
   },
   {
     slug: "machine-learning-roadmap",
-    title: "Machine Learning Roadmap",
+    title: "Machine learning roadmap",
     description:
       "A structured path through the fundamentals — what to study, what to build, and what to safely skip.",
-    icon: "Route",
-    group: "ai_ml",
+    pillar: "ai_ml",
     backing: "guidance",
     topics: [
       "ML fundamentals",
@@ -205,24 +175,21 @@ export const categories: CategoryConfig[] = [
     title: "Generative AI, LLMs & RAG",
     description:
       "Practical direction on LLM applications and retrieval pipelines — where to start, and how to secure what you ship.",
-    icon: "Sparkles",
-    group: "ai_ml",
+    pillar: "ai_ml",
     backing: "guidance",
     topics: [
       "LLM application design",
       "RAG pipelines",
       "Embeddings & vector stores",
-      "Prompt engineering",
       "Securing AI systems",
     ],
   },
   {
     slug: "ai-project-architecture",
-    title: "AI Project Architecture",
+    title: "AI project architecture",
     description:
-      "Structuring an AI project so it's defensible in an interview and maintainable afterwards.",
-    icon: "Boxes",
-    group: "ai_ml",
+      "Structuring an AI project so it is defensible in an interview and maintainable afterwards.",
+    pillar: "ai_ml",
     backing: "guidance",
     topics: [
       "Project scoping",
@@ -231,55 +198,32 @@ export const categories: CategoryConfig[] = [
       "Deployment approach",
     ],
   },
-  {
-    slug: "ai-security-automation",
-    title: "AI for Security & Automation",
-    description:
-      "Building AI-assisted recon and automation tooling — the area where Chandan's security work and AI directly overlap.",
-    icon: "Cpu",
-    group: "ai_ml",
-    backing: "professional",
-    topics: [
-      "AI-assisted exploitation",
-      "Automated recon pipelines",
-      "Security automation",
-      "Tooling with Python",
-    ],
-  },
 
   /* --- Data Science -------------------------------------------------------- */
   {
     slug: "data-science-roadmap",
-    title: "Data Science Roadmap",
+    title: "Data science roadmap",
     description:
       "A personalised path from beginner to job-ready, built around the time you actually have.",
-    icon: "ChartLine",
-    group: "data_science",
+    pillar: "data_science",
     backing: "guidance",
-    topics: [
-      "Beginner to job-ready path",
-      "Study plan",
-      "Tool selection",
-      "Realistic timelines",
-    ],
+    topics: ["Beginner to job-ready", "Study plan", "Tool selection", "Realistic timelines"],
   },
   {
     slug: "python-sql-analytics",
-    title: "Python, SQL & Analytics",
+    title: "Python, SQL & analytics",
     description:
       "The working core of data science — writing Python that does real work and SQL that answers real questions.",
-    icon: "Terminal",
-    group: "data_science",
+    pillar: "data_science",
     backing: "guidance",
     topics: ["Python for data", "SQL querying", "Data analytics", "Pandas & NumPy"],
   },
   {
     slug: "data-science-portfolio",
-    title: "Data Science Projects & Portfolio",
+    title: "Data science projects & portfolio",
     description:
       "Choosing projects that get you interviews, and presenting them so a recruiter understands the value in ten seconds.",
-    icon: "FileText",
-    group: "data_science",
+    pillar: "data_science",
     backing: "guidance",
     topics: [
       "Project selection",
@@ -288,12 +232,8 @@ export const categories: CategoryConfig[] = [
       "Writing up results",
     ],
   },
-
 ];
 
-/** Group ordering on the homepage — cybersecurity first, it's his profession. */
-export const groupOrder: CategoryGroupKey[] = [
-  "cybersecurity",
-  "ai_ml",
-  "data_science",
-];
+export function areasFor(pillar: PillarKey): MentorshipArea[] {
+  return mentorshipAreas.filter((area) => area.pillar === pillar);
+}

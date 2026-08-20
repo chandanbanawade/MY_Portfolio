@@ -36,6 +36,13 @@ export const site = {
   socials: {
     // From the CV.
     linkedin: "https://www.linkedin.com/in/chandanbanawade/",
+    /**
+     * LinkedIn activity feed — talks, wins and event photos. This is the part
+     * of the record that changes weekly, so the site links to it rather than
+     * trying to mirror it.
+     */
+    linkedinActivity:
+      "https://www.linkedin.com/in/chandanbanawade/recent-activity/all/",
     // PLACEHOLDER — not stated on the CV. Add your real URLs here, or leave
     // blank and the link is hidden. Never invent one.
     github: "",
@@ -80,10 +87,9 @@ export const site = {
     { label: "About", href: "/#about" },
     { label: "Experience", href: "/#experience" },
     { label: "Achievements", href: "/#achievements" },
+    { label: "Speaking", href: "/#speaking" },
     { label: "Bug Bounty", href: "/#bug-bounty" },
-    { label: "Expertise", href: "/#expertise" },
     { label: "Mentorship", href: "/#mentorship" },
-    { label: "Projects", href: "/#projects" },
     { label: "FAQ", href: "/#faq" },
   ],
 } as const;

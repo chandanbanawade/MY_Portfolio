@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { site, seo } from "@/config/site";
 import { themeInitScript } from "@/components/site/theme-toggle";
@@ -58,14 +59,17 @@ export const viewport: Viewport = {
   themeColor: "#04060c",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Per-request CSP nonce, minted in src/middleware.ts.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Applies the saved theme before first paint to prevent a flash. */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className={`${inter.variable} ${mono.variable} antialiased`}>
         {children}
